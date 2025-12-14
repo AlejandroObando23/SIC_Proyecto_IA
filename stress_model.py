@@ -12,9 +12,10 @@ def save_model(model, scaler, model_path='stress_rf_model.pkl', scaler_path='sca
     Parámetros:
     - model: Modelo RandomForestClassifier entrenado
     - scaler: StandardScaler ajustado
-    - model_path: Ruta donde guardar el modelo (por defecto 'stress_rf_model.pkl')
-    - scaler_path: Ruta donde guardar el scaler (por defecto 'scaler.pkl')
+    - Ruta donde guardar el modelo ('stress_rf_model.pkl')
+    - Ruta donde guardar el scaler ('scaler.pkl')
     """
+    
     joblib.dump(model, model_path)
     joblib.dump(scaler, scaler_path)
     print(f"Modelo guardado en {model_path}")
@@ -40,20 +41,21 @@ def load_model(model_path='stress_rf_model.pkl', scaler_path='scaler.pkl'):
     return model, scaler
 
 # Función de inferencia
-def predict_stress(acc_x, acc_y, acc_z, bvp, eda, temp, model, scaler):
+def predict_stress(acc, bvp, temp, eda, model, scaler):
     """
     Realiza la predicción de estrés basada en los valores de los sensores.
     Parámetros:
-    - acc_x, acc_y, acc_z: Componentes del acelerómetro
+    - acc: Magnitud del acelerómetro (sqrt(acc_x^2 + acc_y^2 + acc_z^2))
     - bvp: Señal de volumen de pulso sanguíneo
-    - eda: Actividad electrodérmica
     - temp: Temperatura
+    - eda: Actividad electrodérmica
     - model: Modelo RandomForestClassifier cargado
     - scaler: StandardScaler cargado
+
     Imprime:
     - stress = 1 (estrés) o stress = 0 (no estrés)
     """
-    features = np.array([[acc_x, acc_y, acc_z, bvp, eda, temp]])
+    features = np.array([[acc, bvp, temp, eda]])
 
     # Escalar las características
     features_scaled = scaler.transform(features)
@@ -63,3 +65,17 @@ def predict_stress(acc_x, acc_y, acc_z, bvp, eda, temp, model, scaler):
 
     # Imprimir el resultado
     print(f"stress = {int(prediction)}")
+
+
+if __name__ == "__main__":
+    # Cargar el modelo y el scaler
+    model, scaler = load_model()
+
+    # Valores de entrada simulados (ejemplo)
+    acc = 1.0  # Magnitud del acelerómetro
+    bvp = 0.5  # Señal BVP
+    temp = 36.5  # Temperatura
+    eda = 0.2  # Actividad electrodérmica
+
+    # Realizar la predicción
+    predict_stress(acc, bvp, temp, eda, model, scaler)
